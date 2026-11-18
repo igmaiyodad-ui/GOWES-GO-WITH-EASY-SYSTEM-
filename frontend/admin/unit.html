@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unit Go-bike · GOWES</title>
+  <link rel="icon" href="../img/logo.png">
+  <link rel="stylesheet" href="../css/fonts.css">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/panel.css">
+</head>
+
+<body class="admin" data-peran="admin">
+
+  <div class="admin-shell">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Buka atau tutup menu">
+
+      <div>
+        <a class="logo" href="dashboard.html"><img src="../img/logo-white.png" alt="GOWES"></a>
+        <div class="role">Admin / RT POLINEMA</div>
+      </div>
+
+      <label class="hamburger" for="nav-toggle" aria-label="Buka menu"><span></span><span></span><span></span></label>
+
+      <nav class="menu" aria-label="Menu Admin / RT POLINEMA">
+        <a href="dashboard.html" class="">Dashboard</a>
+        <a href="unit.html" class="on">Unit Go-bike</a>
+        <a href="peminjaman.html" class="">Peminjaman</a>
+        <a href="sanksi.html" class="">Sanksi</a>
+        <a href="laporan.html" class="">Laporan Kondisi</a>
+        <a href="riwayat.html" class="">Riwayat Peminjaman</a>
+      </nav>
+
+      <a class="menu-logout" href="../login/staff.html">Keluar</a>
+    </aside>
+
+    <!-- ===== KONTEN UTAMA ===== -->
+    <main class="main">
+      <header class="topbar-a">
+        <div>
+          <h1>Unit Go-bike</h1>
+          <p>Kelola data unit dan status ketersediaan</p>
+        </div>
+        <span class="pill">Admin - RT POLINEMA</span>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Daftar Unit</h2>
+          <button type="button" class="btn-sm solid" data-open="m-tambah-unit">+ Tambah unit</button>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>ID Go-bike</th>
+                <th>Shelter</th>
+                <th>Status</th>
+                <th>Kondisi terakhir</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GB-01</td>
+                <td>Shelter 1</td>
+                <td><span class="chip chip-ok">Tersedia</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-01" data-lokasi="Shelter 1 · Pos Satpam Gedung Direktorat AA" data-status="Tersedia" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-02</td>
+                <td>Shelter 1</td>
+                <td><span class="chip chip-info">Dipinjam</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-02" data-lokasi="Shelter 1 · Pos Satpam Gedung Direktorat AA" data-status="Dipinjam" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-03</td>
+                <td>Shelter 1</td>
+                <td><span class="chip chip-info">Dipinjam</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-03" data-lokasi="Shelter 1 · Pos Satpam Gedung Direktorat AA" data-status="Dipinjam" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-04</td>
+                <td>Shelter 1</td>
+                <td><span class="chip chip-warn">Perawatan</span></td>
+                <td>Rem perlu dicek</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-04" data-lokasi="Shelter 1 · Pos Satpam Gedung Direktorat AA" data-status="Perawatan" data-kondisi="Rem perlu dicek">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-05</td>
+                <td>Shelter 2</td>
+                <td><span class="chip chip-ok">Tersedia</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-05" data-lokasi="Shelter 2 · Pos Satpam Gedung Teknik Sipil" data-status="Tersedia" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-06</td>
+                <td>Shelter 2</td>
+                <td><span class="chip chip-ok">Tersedia</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-06" data-lokasi="Shelter 2 · Pos Satpam Gedung Teknik Sipil" data-status="Tersedia" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+              <tr>
+                <td>GB-07</td>
+                <td>Shelter 2</td>
+                <td><span class="chip chip-info">Dipinjam</span></td>
+                <td>Baik</td>
+                <td><a class="btn-sm" href="#" data-open="m-ubah" data-id="GB-07" data-lokasi="Shelter 2 · Pos Satpam Gedung Teknik Sipil" data-status="Dipinjam" data-kondisi="Baik">Ubah</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== MODAL: UBAH STATUS ===== -->
+      <div class="modal" id="m-ubah" role="dialog" aria-modal="true" aria-labelledby="m-ubah-t">
+        <div class="modal-box">
+          <h2 id="m-ubah-t">Ubah Status Go-bike?</h2>
+          <div class="unit-card">
+            <small>ID Go-bike</small>
+            <b data-modal="id">GB-03</b>
+            <span data-modal="lokasi">Shelter 1 · Pos Satpam Gedung Direktorat AA</span>
+          </div>
+          <form class="modal-form" onsubmit="return false">
+            <label class="fld grey">
+              <span>Kondisi terakhir Go-bike</span>
+              <input name="kondisi" placeholder="Kondisi terakhir Go-bike" type="text">
+            </label>
+            <label class="fld tint">
+              <span class="sr">Status Go-bike</span>
+              <select name="status" aria-label="Status Go-bike">
+                <option value="">Status Go-bike</option>
+                <option>Tersedia</option>
+                <option>Dipinjam</option>
+                <option>Perawatan</option>
+              </select>
+            </label>
+            <button type="submit" class="modal-ok" data-close>Konfirmasi</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===== MODAL: TAMBAH UNIT ===== -->
+      <div class="modal" id="m-tambah-unit" role="dialog" aria-modal="true" aria-labelledby="m-tambah-unit-t">
+        <div class="modal-box">
+          <h2 id="m-tambah-unit-t">Tambah Unit Go-bike?</h2>
+          <form class="modal-form" onsubmit="return false">
+            <label class="fld ">
+              <span>Letak Shelter</span>
+              <input type="text">
+            </label>
+            <label class="fld ">
+              <span>Merk Sepeda</span>
+              <input type="text">
+            </label>
+            <label class="fld ">
+              <span>Jumlah Sepeda</span>
+              <input type="number">
+            </label>
+            <button type="submit" class="modal-ok" data-close>Konfirmasi</button>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../js/common.js"></script>
+  <script src="../js/tabel.js"></script>
+  <script src="../js/modal.js"></script>
+  <script src="../js/dropdown.js"></script>
+</body>
+
+</html>
