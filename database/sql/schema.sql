@@ -1,108 +1,103 @@
 -- create database db_gowes;
+CREATE DATABASE db_gowes;
 
--- Tabel Superadmin
-create table superadmin ( 
-	id_superadmin serial primary key,
-	username varchar(30) not null unique,
-	password varchar(255) not null
+-- 1. Tabel Superadmin
+CREATE TABLE superadmin (
+	id_superadmin SERIAL PRIMARY KEY,
+	username VARCHAR(30) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL
 );
 
--- Tabel Admin
-create table admin (
-	id_admin serial primary key,
-	id_superadmin int not null,
-	username varchar(50) not null,
-	password varchar(100) not null,
-	
-	foreign key(id_superadmin) references superadmin(id_superadmin)
+-- 2. Tabel Admin (ditambahkan oleh Superadmin)
+CREATE TABLE admin (
+	id_admin SERIAL PRIMARY KEY,
+	id_superadmin INT NOT NULL,
+	username VARCHAR(50) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL,
+	FOREIGN KEY (id_superadmin) REFERENCES superadmin(id_superadmin)
 );
 
--- Tabel Shelter
-create table shelter (
-	id_shelter serial primary key,
-	id_superadmin int not null,
-	nama_shelter varchar(50) not null,
-	lokasi varchar(100) not null,
-	
-	foreign key (id_superadmin) references superadmin(id_superadmin)
+-- 3. Tabel Shelter
+CREATE TABLE shelter (
+	id_shelter SERIAL PRIMARY KEY,
+	id_superadmin INT NOT NULL,
+	nama_shelter VARCHAR(50) NOT NULL,
+	lokasi VARCHAR(100) NOT NULL,
+	FOREIGN KEY (id_superadmin) REFERENCES superadmin(id_superadmin)
 );
 
--- Tabel Petugas
-create table petugas(
-	id_petugas serial primary key,
-	id_superadmin int not null,
-	id_shelter int not null unique,
-	username varchar(30) not null unique,
-	password varchar(255)not null,
-	foreign key (id_superadmin) references superadmin(id_superadmin)
-	foreign key (id_shelter) references shelter(id_shelter)
+-- 4. Tabel Petugas
+CREATE TABLE petugas (
+	id_petugas SERIAL PRIMARY KEY,
+	id_superadmin INT NOT NULL,
+	id_shelter INT NOT NULL,
+	username VARCHAR(30) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL,
+	FOREIGN KEY (id_superadmin) REFERENCES superadmin(id_superadmin),
+	FOREIGN KEY (id_shelter) REFERENCES shelter(id_shelter)
 );
 
--- Tabel Sepeda
-create table sepeda (
-	id_sepeda serial primary key,
-	id_shelter int not null,
-	id_admin int not null,
-	kode_qr varchar(100) not null,
-	status_ketersediaan varchar(20) not null default 'Tersedia',
-	catatan_perawatan varchar(255),
-	
-	foreign key(id_shelter) references shelter (id_shelter),
-	foreign key(id_admin) references admin(id_admin)
+-- 5. Tabel Sepeda
+CREATE TABLE sepeda (
+	id_sepeda SERIAL PRIMARY KEY,
+	id_shelter INT NOT NULL,
+	id_admin INT NOT NULL,
+	kode_qr VARCHAR(100) NOT NULL UNIQUE,
+	status_ketersediaan VARCHAR(20) NOT NULL DEFAULT 'Tersedia',
+	FOREIGN KEY (id_shelter) REFERENCES shelter(id_shelter),
+	FOREIGN KEY (id_admin) REFERENCES admin(id_admin)
 );
 
--- Tabel Peminjam
-create table peminjam(
-	id_peminjam serial primary key,
-	no_identitas varchar(20) not null unique,
-	nama varchar(50) not null,
-	password varchar(255) not null
+-- 6. Tabel Peminjam
+CREATE TABLE peminjam (
+	id_peminjam SERIAL PRIMARY KEY,
+	no_identitas VARCHAR(20) NOT NULL UNIQUE,
+	nama VARCHAR(50) NOT NULL,
+	password VARCHAR(255) NOT NULL
 );
 
--- Tabel peminjaman
-create table peminjaman(
-	id_peminjaman serial primary key,
-	id_sepeda int not null,
-	id_peminjam int not null,
-	id_petugas int,
-	waktu_mulai timestamp not null, 
-	durasi_pinjam int not null,
-	waktu_kembali timestamp,
-	batas_kembali timestamp not null,
-	status_keterlambatan varchar(20) not null default 'Tepat Waktu',
-	id_petugas_kembali int,
-
-	foreign key(id_sepeda) references sepeda(id_sepeda),
-	foreign key (id_peminjam) references peminjam(id_peminjam),
-	foreign key(id_petugas) references petugas(id_petugas),
-	foreign key(id_petugas_kembali) references petugas(id_petugas)
+-- 7. Tabel Peminjaman 
+CREATE TABLE peminjaman (
+	id_peminjaman SERIAL PRIMARY KEY,
+	id_peminjam INT NOT NULL,
+	id_shelter INT NOT NULL,
+	id_sepeda INT NOT NULL,
+	id_petugas INT,
+	waktu_mulai TIMESTAMP NOT NULL,
+	durasi_pinjam INT NOT NULL,
+	waktu_kembali TIMESTAMP,
+	batas_kembali TIMESTAMP NOT NULL,
+	status_keterlambatan VARCHAR(20) NOT NULL DEFAULT 'Tepat Waktu',
+	status_peminjaman VARCHAR(20) NOT NULL DEFAULT 'Menunggu',
+	FOREIGN KEY (id_peminjam) REFERENCES peminjam(id_peminjam),
+	FOREIGN KEY (id_shelter) REFERENCES shelter(id_shelter),
+	FOREIGN KEY (id_sepeda) REFERENCES sepeda(id_sepeda),
+	FOREIGN KEY (id_petugas) REFERENCES petugas(id_petugas)
 );
 
--- Tabel laporan_kondisi
-create table laporan_kondisi(
-	id_laporankondisi serial primary key,
-	id_peminjaman int unique not null,
-	nilai_ban int not null,
-	nilai_rem int not null,
-	nilai_rantai int not null,
-	nilai_rangka_bodi int not null,
-	keterangan varchar(255),
-	tgl_lapor date not null,
-	
-	foreign key(id_peminjaman) references peminjaman(id_peminjaman),
+-- 8. Tabel Laporan Kondisi
+CREATE TABLE laporan_kondisi (
+	id_laporankondisi SERIAL PRIMARY KEY,
+	id_peminjaman INT UNIQUE NOT NULL,
+	nilai_ban INT NOT NULL,
+	nilai_rem INT NOT NULL,
+	nilai_rantai INT NOT NULL,
+	nilai_rangka_bodi INT NOT NULL,
+	keterangan VARCHAR(255),
+	tgl_lapor DATE NOT NULL,
+	FOREIGN KEY (id_peminjaman) REFERENCES peminjaman(id_peminjaman)
 );
 
--- Tabel sanksi
-create table sanksi (
-	id_sanksi serial primary key, 
-	id_peminjam int not null,
-	id_admin int not null,
-	jenis_tanggungan varchar(50) not null,
-	tgl_mulai date not null,
-	tgl_selesai date not null,
-	
-	foreign key(id_peminjam) references peminjam(id_peminjam),
-	foreign key(id_admin) references admin(id_admin)
+-- 9. Tabel Sanksi
+CREATE TABLE sanksi (
+	id_sanksi SERIAL PRIMARY KEY,
+	id_peminjam INT NOT NULL,
+	id_admin INT NOT NULL,
+	jenis_tanggungan VARCHAR(50) NOT NULL,
+	tgl_mulai DATE NOT NULL,
+	tgl_selesai DATE NOT NULL,
+	FOREIGN KEY (id_peminjam) REFERENCES peminjam(id_peminjam),
+	FOREIGN KEY (id_admin) REFERENCES admin(id_admin)
 );
 
 --trigger untuk pilih durasi (jalanin di database)
