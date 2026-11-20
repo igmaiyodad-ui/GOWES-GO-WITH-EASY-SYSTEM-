@@ -1,3 +1,68 @@
+-- DML 
+-- (DATA DUMMY)
+-- superadmin
+insert into superadmin(username, password) values 
+('superadmin', 'gowesjaya');
+
+-- admin
+insert into admin(id_superadmin, username, password) values 
+(1, 'admin', 'admingowes1');
+
+-- shelter
+insert into shelter(id_superadmin, nama_shelter, lokasi) values
+(1, 'Shelter 1', 'Pos Satpam Gedung Direktorat AA'),
+(1, 'Shelter 2', 'Pos Satpam Gedung Teknik Sipil');
+-- petugas 
+insert into petugas(id_superadmin, id_shelter, username, password) values
+(1, 1, 'petugas_shelter1', 'shelter1'),
+(1, 2, 'petugas_shelter2', 'shelter2');
+-- peminjam
+insert into peminjam (no_identitas, nama, password) values
+('254107060087', 'Callista Dinar Kushermyla', '254107060087'),
+('254107060150', 'Farrel Raissa Ermanto', '254107060150'),
+('254107060077', 'Luthfiyanna Nuha Syahada', '254107060077'),
+('254107060099', 'Muhammad Fakhri Al Fawwaz', '254107060099'),
+('254107060003', 'Reffi Dwino Igmaiyoda', '254107060003');
+
+insert into peminjam (no_identitas, nama, password) values 
+('254107060166', 'Ahwa Maulana Putra', '254107060166'),
+('254107060089', 'Aisya Noor Fardani', '254107060089'),
+('244107060115', 'Akhmad Hasan Kurniawan', '254107060115'),
+('254107060032', 'Ananda Friska', '254107060062'),
+('254107060062', 'Budi Septian Caraka', '254107060062'),
+('254107060019', 'Ezzy Juliansyah Dwihersan', '254107060019'),
+('254107060001', 'Farrelyan Hilmy Araya', '254107060001'),
+('254107060174', 'Gilang Pamungkas Jati', '254107060174'),
+('254107060081', 'Jesyca Alice Sutanto', '254107060081'),
+('254107060104', 'Kareza Maulaa Iskhak', '254107060104'),
+('254107060024', 'Marcello Artasda', '254107060024'),
+('254107060009', 'Muhammad Zasky Aryo Mahadani', '254107060009'),
+('254107060010', 'Nabila Pebri Mahrani', '254107060010'),
+('254107060153', 'Naila Putri Alifia', '254107060153'),
+('254107060048', 'Nashyra Afaf Fayyaza', '254107060048'),
+('254107060132', 'Nedy Nugroho Mulyadi', '254107060132'),
+('254107060145', 'Pinkan Nanda Arifin', '254107060145'),
+('254107060123', 'Praditya Rasya Pramana', '254107060123'),
+('254107060091', 'Rahmansyah Aziz Pratama', '254107060091'),
+('254107060034', 'Tantri Novia Khasanah', '254107060034');
+
+-- sepeda
+INSERT INTO sepeda (id_shelter, id_admin, status_ketersediaan) VALUES
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Tersedia'),
+(1, 1, 'Perawatan'),
+(2, 1, 'Tersedia'),
+(2, 1, 'Tersedia'),
+(2, 1, 'Tersedia'),
+(2, 1, 'Tersedia'),
+(2, 1, 'Tersedia'),
+(2, 1, 'Tersedia');
+
 -- 1. login | UNION
 create view view_login as
 select id_superadmin as id, username as identitas, password, 'superadmin' as role
@@ -12,7 +77,8 @@ union
 select id_peminjam, no_identitas, password, 'peminjam'
 from peminjam;
 --php
-SELECT * FROM view_login WHERE identitas = $1;
+SELECT * FROM view_login WHERE identitas = 'admin';
+SELECT * FROM view_login;
 
 -- QUERY TAMPILAN USER
 -- 2. dashboard user (informasi shelter dan unit sepeda yang tersedia)
@@ -39,19 +105,28 @@ select
 from sepeda sp
 join shelter s on sp.id_shelter = s.id_shelter;
 --php
-SELECT * FROM view_detail_sepeda WHERE kode_qr = $1;
+SELECT * FROM view_detail_sepeda WHERE kode_qr = 'GB-01';
 
 -- 5. pilih durasi pratinjau waktu (php)
 SELECT kode_qr, nama_shelter, status_ketersediaan
 FROM view_detail_sepeda
-WHERE id_sepeda = $1;
+WHERE id_sepeda = 1;
 
 -- 6. Cek status suspend dan insert durasi (php)
+create view view_status_sanksi as
+select 
+    pm.id_peminjam,
+    (select COUNT(*) from peminjaman where id_peminjam = pm.id_peminjam AND status_keterlambatan = 'Terlambat') AS jumlah_keterlambatan,
+    (select COUNT(*) from sanksi where id_peminjam = pm.id_peminjam AND CURRENT_DATE BETWEEN tgl_mulai AND tgl_selesai) AS sedang_suspen,
+    (select tgl_mulai from sanksi where id_peminjam = pm.id_peminjam ORDER BY tgl_mulai DESC LIMIT 1) AS suspen_terakhir_mulai,
+    (select tgl_selesai from sanksi where id_peminjam = pm.id_peminjam ORDER BY tgl_mulai DESC LIMIT 1) AS suspen_terakhir_selesai
+from peminjam pm;
 -- cek akun suspend (0 = lolos)
-SELECT sedang_suspen FROM view_status_sanksi WHERE id_peminjam = $1;
+SELECT sedang_suspen FROM view_status_sanksi WHERE id_peminjam = 1;
 -- info Go-bike: "GB-03 · Shelter 1"
-SELECT kode_qr, nama_shelter FROM view_detail_sepeda WHERE id_sepeda = $1;
+SELECT kode_qr, nama_shelter FROM view_detail_sepeda WHERE id_sepeda = 1;
 
+-- BELUM DI RUN
 -- tombol konfirmasi peminjaman (php)
 BEGIN;
 -- 1. kunci sepeda dulu (kalau 0 baris berubah = sepeda sudah diambil orang lain, ROLLBACK)
@@ -70,38 +145,42 @@ CREATE VIEW view_status_konfirmasi AS
 SELECT id_peminjaman, id_petugas
 FROM peminjaman;
 -- php
-SELECT * FROM view_status_konfirmasi WHERE id_peminjaman = $1;
+SELECT * FROM view_status_konfirmasi WHERE id_peminjaman = 1;
 -- id_petugas masih kosong = tombol "Lihat Peminjaman" belum aktif
 -- id_petugas terisi      = tombol aktif
 
+-- BELUM DI RUN
 -- 8. peminjaman saya
-CREATE VIEW view_peminjaman_aktif_admin AS
+CREATE VIEW view_peminjaman_aktif AS
 SELECT
     p.id_peminjaman,
+    p.id_peminjam,
     pm.no_identitas,
     sp.kode_qr,
     s.nama_shelter,
     p.waktu_mulai,
     p.batas_kembali,
-    s.id_shelter
+    s.id_shelter,
+    p.status_peminjaman
 FROM peminjaman p
 JOIN peminjam pm ON p.id_peminjam = pm.id_peminjam
 JOIN sepeda sp ON p.id_sepeda = sp.id_sepeda
 JOIN shelter s ON sp.id_shelter = s.id_shelter
 WHERE p.waktu_kembali IS NULL;
+
 -- php
-SELECT * FROM view_peminjaman_aktif WHERE id_peminjam = $1;
+SELECT * FROM view_peminjaman_aktif WHERE id_peminjam = 1;
 
 -- 9. update kembalikan go-bike
 update peminjaman
 set waktu_kembali = now()
-where id_peminjaman = $1;
+where id_peminjaman = 1;
 
 -- update sepeda tersedia
 update sepeda
 set status_ketersediaan = 'Tersedia'
 where id_sepeda = (
-    select id_sepeda from peminjaman where id_peminjaman = $1
+    select id_sepeda from peminjaman where id_peminjaman = 1
 );
 
 -- 10. pengembalian berhasil
@@ -114,11 +193,11 @@ select
 from peminjaman p
 join sepeda sp on p.id_sepeda = sp.id_sepeda;
 --php
-SELECT * FROM view_hasil_pengembalian WHERE id_peminjaman = $1;
+SELECT * FROM view_hasil_pengembalian WHERE id_peminjaman = 1;
 
 -- 11. laporan kondisi (input nilai)
 insert into laporan_kondisi (id_peminjaman, nilai_ban, nilai_rem, nilai_rantai, nilai_rangka_bodi, keterangan, tgl_lapor)
-values ($1, $2, $3, $4, $5, $6, CURRENT_DATE);
+values (1, 4, 5, 5, 5, 5, CURRENT_DATE);
 
 -- 12. riwayat
 create view view_riwayat_peminjaman as
@@ -128,7 +207,7 @@ select
     sp.kode_qr,
     s.nama_shelter,
     p.waktu_mulai,
-    p.durasi_jam,
+    p.durasi_pinjam,
     p.waktu_kembali,
     p.status_keterlambatan
 from peminjaman p
@@ -136,29 +215,21 @@ join sepeda sp on p.id_sepeda = sp.id_sepeda
 join shelter s on sp.id_shelter = s.id_shelter
 where p.waktu_kembali is not null;
 -- php
-SELECT * FROM view_riwayat_peminjaman WHERE id_peminjam = $1 ORDER BY waktu_mulai desc;
+SELECT * FROM view_riwayat_peminjaman WHERE id_peminjam = 1 ORDER BY waktu_mulai desc;
 
 -- 13. status sanksi
-create view view_status_sanksi as
-select 
-    pm.id_peminjam,
-    (select COUNT(*) from peminjaman where id_peminjam = pm.id_peminjam AND status_keterlambatan = 'Terlambat') AS jumlah_keterlambatan,
-    (select COUNT(*) from sanksi where id_peminjam = pm.id_peminjam AND CURRENT_DATE BETWEEN tgl_mulai AND tgl_selesai) AS sedang_suspen,
-    (select tgl_mulai from sanksi where id_peminjam = pm.id_peminjam ORDER BY tgl_mulai DESC LIMIT 1) AS suspen_terakhir_mulai,
-    (select tgl_selesai from sanksi where id_peminjam = pm.id_peminjam ORDER BY tgl_mulai DESC LIMIT 1) AS suspen_terakhir_selesai
-from peminjam pm;
 -- php
-SELECT * FROM view_status_sanksi WHERE id_peminjam = $1
+SELECT * FROM view_status_sanksi WHERE id_peminjam = 1;
 
 -- 14. profil peminjam
 create view view_profil_peminjam as
 select 
     id_peminjam,
     nama,
-    no_identitas,
+    no_identitas
 from peminjam;
 -- php
-SELECT * FROM view_profil_peminjam WHERE id_peminjam = $1;
+SELECT * FROM view_profil_peminjam WHERE id_peminjam = 1;
 
 
 -- TAMPILAN SUPERADMIN
@@ -174,23 +245,10 @@ select
     (select count(*) from admin) as admin_aktif;
 -- php
 SELECT * FROM view_ringkasan_superadmin;
+
 --(shelter pakai view_ketersediaan_shelter)
 -- tabel peminjaman aktif
-create view view_peminjaman_aktif_admin as
-select
-    p.id_peminjaman,
-    pm.no_identitas,
-    sp.kode_qr,
-    s.nama_shelter,
-    p.waktu_mulai,
-    p.batas_kembali
-from peminjaman p
-join peminjam pm on p.id_peminjam = pm.id_peminjam
-join sepeda sp on p.id_sepeda = sp.id_sepeda
-join shelter s on sp.id_shelter = s.id_shelter
-where p.waktu_kembali is null;
--- php
-SELECT * FROM view_peminjaman_aktif_admin ORDER BY batas_kembali asc;
+SELECT * FROM view_peminjaman_aktif ORDER BY batas_kembali asc;
 
 -- 3. unit go-bike
 CREATE VIEW view_unit_gobike AS
@@ -205,7 +263,6 @@ SELECT
      WHERE p.id_sepeda = sp.id_sepeda 
      ORDER BY lk.id_laporankondisi DESC LIMIT 1) AS kondisi_terakhir,
     s.lokasi,
-    sp.catatan_perawatan,
     sp.id_shelter
 FROM sepeda sp
 JOIN shelter s ON sp.id_shelter = s.id_shelter;
@@ -214,10 +271,10 @@ SELECT * FROM view_unit_gobike ORDER BY kode_qr;
 
 -- 4. peminjaman aktif
 --php
-SELECT * FROM view_peminjaman_aktif_admin ORDER BY batas_kembali ASC;
+SELECT * FROM view_peminjaman_aktif ORDER BY batas_kembali ASC;
 -- tombol search di php
-SELECT * FROM view_peminjaman_aktif_admin
-WHERE no_identitas LIKE $1 OR kode_qr LIKE $1
+SELECT * FROM view_peminjaman_aktif
+WHERE no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01'
 ORDER BY batas_kembali ASC;
 
 -- 5. Rekap Sanksi
@@ -237,7 +294,7 @@ JOIN peminjam pm ON sk.id_peminjam = pm.id_peminjam;
 SELECT * FROM view_sanksi_admin ORDER BY tgl_mulai DESC;
 -- search di php
 SELECT * FROM view_sanksi_admin
-WHERE no_identitas LIKE $1 OR nama LIKE $1
+WHERE no_identitas LIKE '254107060077' OR nama LIKE 'Luthfiyanna Nuha Syahada'
 ORDER BY tgl_mulai DESC;
 
 -- 6. Laporan Kondisi
@@ -263,7 +320,7 @@ JOIN peminjam pm ON p.id_peminjam = pm.id_peminjam;
 SELECT * FROM view_laporan_kondisi ORDER BY tgl_lapor DESC, id_laporankondisi DESC;
 -- search di php
 SELECT * FROM view_laporan_kondisi
-WHERE no_identitas ILIKE $1 OR kode_qr ILIKE $1
+WHERE no_identitas ILIKE '254107060077' OR kode_qr ILIKE 'GB-01'
 ORDER BY tgl_lapor DESC, id_laporankondisi DESC;
 
 --7. Riwayat peminjaman
@@ -281,14 +338,17 @@ SELECT
 FROM peminjaman p
 JOIN peminjam pm ON p.id_peminjam = pm.id_peminjam
 JOIN sepeda sp ON p.id_sepeda = sp.id_sepeda;
+
 -- php
 SELECT * FROM view_riwayat_semua_peminjaman ORDER BY waktu_mulai DESC;
 -- search di php
 SELECT * FROM view_riwayat_semua_peminjaman
-WHERE no_identitas LIKE $1 OR kode_qr LIKE $1
+WHERE no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01'
 ORDER BY waktu_mulai DESC;
 
+-- BELUM DI RUN
 -- 8. view data admin
+alter table petugas add column status_akun 
 CREATE VIEW view_data_petugas AS
 SELECT pt.id_petugas, s.nama_shelter, pt.username, pt.status_akun
 FROM petugas pt
@@ -304,10 +364,10 @@ SELECT * FROM view_data_admin ORDER BY username;
 
 -- search php
 SELECT * FROM view_data_petugas
-WHERE username LIKE $1 OR nama_shelter LIKE $1;
+WHERE username LIKE 'petugas_shelter1' OR nama_shelter LIKE 'Shelter 1';
 
 SELECT * FROM view_data_admin
-WHERE username LIKE $1;
+WHERE username LIKE 'admin';
 
 -- tombol add (insert) di php
 INSERT INTO petugas (id_superadmin, id_shelter, username, password)
@@ -338,31 +398,8 @@ SELECT * FROM view_ringkasan_admin;
 -- shelter pakai view_ketersediaan_shelter 
 SELECT * FROM view_ketersediaan_shelter;
 -- tabel peminjaman aktif
-CREATE VIEW view_peminjaman_aktif_admin AS
-SELECT
-    p.id_peminjaman,
-    pm.no_identitas,
-    sp.kode_qr,
-    s.nama_shelter,
-    p.waktu_mulai,
-    p.batas_kembali,
-    s.id_shelter,
-    p.id_petugas
-FROM peminjaman p
-JOIN peminjam pm ON p.id_peminjam = pm.id_peminjam
-JOIN sepeda sp ON p.id_sepeda = sp.id_sepeda
-JOIN shelter s ON sp.id_shelter = s.id_shelter
-WHERE p.waktu_kembali IS NULL;
---php
-SELECT * FROM view_peminjaman_aktif_admin ORDER BY batas_kembali ASC;
+SELECT * FROM view_peminjaman_aktif ORDER BY batas_kembali ASC;
 -- view ketersediaan sepeda per shelter
-CREATE VIEW view_ketersediaan_shelter AS
-SELECT 
-    s.id_shelter, s.nama_shelter, s.lokasi,
-    (SELECT COUNT(*) FROM sepeda WHERE id_shelter = s.id_shelter) AS total_unit,
-    (SELECT COUNT(*) FROM sepeda WHERE id_shelter = s.id_shelter AND status_ketersediaan = 'Tersedia') AS unit_tersedia
-FROM shelter s;
---php
 SELECT * FROM view_ketersediaan_shelter;
 
 -- 3. Unit go-bike (php)
@@ -373,33 +410,34 @@ CREATE VIEW view_daftar_shelter AS
 SELECT id_shelter, nama_shelter
 FROM shelter;
 -- php
-SELECT * FROM view_daftar_shelter
--- tombol tambah unit (insert php)
-INSERT INTO sepeda (id_shelter, id_admin, kode_qr, status_ketersediaan)
-VALUES ($1, $2, $3, 'Tersedia');
+SELECT * FROM view_daftar_shelter;
+-- tombol tambah unit, konfirmasi popup (insert php)
+INSERT INTO sepeda (id_shelter, id_admin, status_ketersediaan)
+VALUES ($1, $2, $3)
+RETURNING id_sepeda, kode_qr;
 -- tombol ubah unit (php)
-SELECT * FROM view_unit_gobike WHERE id_sepeda = $1;
+SELECT * FROM view_unit_gobike WHERE id_sepeda = 1;
+
+--BELUM DI RUN
 -- simpan tombol konfirmasi (php)
 UPDATE sepeda
 SET status_ketersediaan = $1,
-    catatan_perawatan = $2
-WHERE id_sepeda = $3 AND status_ketersediaan <> 'Dipinjam';
+WHERE id_sepeda = $2 AND status_ketersediaan <> 'Dipinjam';
 
 -- Tambah unit go bike
--- BLM FIX KARENA ADA MERK
 
 -- 4. peminjaman aktif (php)
-SELECT * FROM view_peminjaman_aktif_admin ORDER BY batas_kembali ASC;
+SELECT * FROM view_peminjaman_aktif ORDER BY batas_kembali ASC;
 -- kotak Verifikasi Bukti (php)
-SELECT * FROM view_peminjaman_aktif_admin
-WHERE no_identitas LIKE $1 OR kode_qr LIKE $1
+SELECT * FROM view_peminjaman_aktif
+WHERE no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01'
 ORDER BY batas_kembali ASC;
 
 -- 5. sanksi (php)
 SELECT * FROM view_sanksi_admin ORDER BY tgl_mulai DESC;
 -- kotak search (php)
 SELECT * FROM view_sanksi_admin
-WHERE no_identitas LIKE $1 OR nama LIKE $1
+WHERE no_identitas LIKE '254107060077' OR nama LIKE 'Luthfiyanna Nuha Syahada'
 ORDER BY tgl_mulai DESC;
 
 -- 6. laporan kondisi (php)
@@ -407,14 +445,14 @@ SELECT * FROM view_laporan_kondisi
 ORDER BY tgl_lapor DESC, id_laporankondisi DESC;
 -- kotak search (php)
 SELECT * FROM view_laporan_kondisi
-WHERE no_identitas LIKE $1 OR kode_qr LIKE $1
+WHERE no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01'
 ORDER BY tgl_lapor DESC, id_laporankondisi DESC;
 
 -- 7. riwayat peminjaman (php)
 SELECT * FROM view_riwayat_semua_peminjaman ORDER BY waktu_mulai DESC;
 -- kotak search (php)
 SELECT * FROM view_riwayat_semua_peminjaman
-WHERE no_identitas LIKE $1 OR kode_qr LIKE $1
+WHERE no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01'
 ORDER BY waktu_mulai DESC;
 
 
@@ -425,7 +463,7 @@ CREATE VIEW view_shelter_petugas AS
 SELECT id_petugas, id_shelter
 FROM petugas;
 -- php
-SELECT id_shelter FROM view_shelter_petugas WHERE id_petugas = $1;
+SELECT id_shelter FROM view_shelter_petugas WHERE id_petugas = 1;
 -- kartu ringkasan
 CREATE VIEW view_ringkasan_petugas AS
 SELECT
@@ -442,19 +480,20 @@ SELECT
      WHERE CURRENT_DATE BETWEEN tgl_mulai AND tgl_selesai) AS suspen_aktif
 FROM shelter s;
 --php
-SELECT * FROM view_ringkasan_petugas WHERE id_shelter = $1;
+SELECT * FROM view_ringkasan_petugas WHERE id_shelter = 1;
 -- kartu shelter
-SELECT * FROM view_ketersediaan_shelter WHERE id_shelter = $1;
+SELECT * FROM view_ketersediaan_shelter WHERE id_shelter = 1;
 -- peminjaman aktif
-SELECT * FROM view_peminjaman_aktif_admin
-WHERE id_shelter = $1
+SELECT * FROM view_peminjaman_aktif
+WHERE id_shelter = 1
 ORDER BY batas_kembali ASC;
 
 -- 3. unit go-bike petugas (php)
 SELECT * FROM view_unit_gobike
-WHERE id_shelter = $1
+WHERE id_shelter = 2
 ORDER BY kode_qr;
 
+-- BELUM DI RUN
 -- 4. peminjaman aktif petugas 
 CREATE VIEW view_peminjaman_petugas AS
 SELECT
@@ -473,7 +512,7 @@ JOIN sepeda sp ON p.id_sepeda = sp.id_sepeda
 WHERE p.id_petugas_kembali IS NULL;
 --php
 SELECT * FROM view_peminjaman_petugas
-WHERE id_shelter = $1
+WHERE id_shelter = 1
 ORDER BY batas_kembali ASC;
 -- tombol konfirmasi kembali petugas
 BEGIN;
@@ -491,8 +530,8 @@ WHERE id_sepeda = (SELECT id_sepeda FROM peminjaman WHERE id_peminjaman = $2);
 COMMIT;
 
 -- kotak Verifikasi Bukti (php)
-SELECT * FROM view_peminjaman_aktif_admin
-WHERE id_shelter = $1 AND (no_identitas LIKE $2 OR kode_qr LIKE $2)
+SELECT * FROM view_peminjaman_aktif
+WHERE id_shelter = 1 AND (no_identitas LIKE '25410706007' OR kode_qr LIKE 'GB-01')
 ORDER BY batas_kembali ASC;
 -- tombol Konfirmasi Pinjam (php)
 UPDATE peminjaman
@@ -501,15 +540,14 @@ WHERE id_peminjaman = $2 AND id_petugas IS NULL;
 
 -- 6. Laporan kondisi petugas (php)
 SELECT * FROM view_laporan_kondisi
-WHERE id_shelter = $1
+WHERE id_shelter = 1
 ORDER BY tgl_lapor DESC, id_laporankondisi DESC;
 
 -- 7. Riwayat peminjaman petugas (php)
 SELECT * FROM view_riwayat_semua_peminjaman
-WHERE id_shelter = $1
+WHERE id_shelter = 1
 ORDER BY waktu_mulai DESC;
-
 -- tombol Cari (php)
 SELECT * FROM view_riwayat_semua_peminjaman
-WHERE id_shelter = $1 AND (no_identitas LIKE $2 OR kode_qr LIKE $2)
+WHERE id_shelter = 1 AND (no_identitas LIKE '254107060077' OR kode_qr LIKE 'GB-01')
 ORDER BY waktu_mulai DESC;
